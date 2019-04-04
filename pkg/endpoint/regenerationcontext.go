@@ -53,12 +53,22 @@ func (r DatapathRegenerationLevel) String() string {
 }
 
 func (e *ExternalRegenerationMetadata) toRegenerationContext() *regenerationContext {
+
+	pCtx := e.ParentContext
+	cFunc := e.ParentCancel
+
+	if pCtx == nil {
+		pCtx, cFunc = context.WithCancel(context.Background())
+	}
+
 	return &regenerationContext{
 		Reason: e.Reason,
 		datapathRegenerationContext: &datapathRegenerationContext{
 			regenerationLevel: e.RegenerationLevel,
 			ctCleaned:         make(chan struct{}),
 		},
+		parentContext: pCtx,
+		cancelFunc:    cFunc,
 	}
 }
 
@@ -72,6 +82,9 @@ type ExternalRegenerationMetadata struct {
 	// RegenerationLevel forces datapath regeneration according to the
 	// levels defined in the DatapathRegenerationLevel description.
 	RegenerationLevel DatapathRegenerationLevel
+
+	ParentContext context.Context
+	ParentCancel  context.CancelFunc
 }
 
 // RegenerationContext provides context to regenerate() calls to determine
@@ -91,6 +104,10 @@ type regenerationContext struct {
 	DoneFunc func()
 
 	datapathRegenerationContext *datapathRegenerationContext
+
+	parentContext context.Context
+
+	cancelFunc context.CancelFunc
 }
 
 // datapathRegenerationContext contains information related to regenerating the
