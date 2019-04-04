@@ -50,6 +50,13 @@ type endpoint interface {
 }
 
 func reloadDatapath(ctx context.Context, ep endpoint, dirs *directoryInfo) error {
+
+	select {
+	case <-ctx.Done():
+		return ctx.Err()
+	default:
+	}
+
 	// Replace the current program
 	objPath := path.Join(dirs.Output, endpointObj)
 	if ep.HasIpvlanDataPath() {
@@ -57,7 +64,12 @@ func reloadDatapath(ctx context.Context, ep endpoint, dirs *directoryInfo) error
 			scopedLog := ep.Logger(Subsystem).WithFields(logrus.Fields{
 				logfields.Path: objPath,
 			})
-			scopedLog.WithError(err).Warn("JoinEP: Failed to load program")
+			switch err {
+			case context.Canceled:
+				scopedLog.WithError(err).Warn("grafting of datapath canceled")
+			default:
+				scopedLog.WithError(err).Warn("JoinEP: Failed to load program")
+			}
 			return err
 		}
 	} else {
@@ -66,7 +78,12 @@ func reloadDatapath(ctx context.Context, ep endpoint, dirs *directoryInfo) error
 				logfields.Path: objPath,
 				logfields.Veth: ep.InterfaceName(),
 			})
-			scopedLog.WithError(err).Warn("JoinEP: Failed to load program")
+			switch err {
+			case context.Canceled:
+				scopedLog.WithError(err).Warn("reloading of datapath canceled")
+			default:
+				scopedLog.WithError(err).Warn("JoinEP: Failed to load program")
+			}
 			return err
 		}
 	}

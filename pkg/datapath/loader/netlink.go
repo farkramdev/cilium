@@ -55,6 +55,12 @@ func replaceQdisc(ifName string) error {
 
 // replaceDatapath the qdisc and BPF program for a endpoint
 func replaceDatapath(ctx context.Context, ifName string, objPath string, progSec string) error {
+	select {
+	case <-ctx.Done():
+		return ctx.Err()
+	default:
+	}
+
 	err := replaceQdisc(ifName)
 	if err != nil {
 		return fmt.Errorf("Failed to replace Qdisc for %s: %s", ifName, err)
@@ -95,6 +101,12 @@ func replaceDatapath(ctx context.Context, ifName string, objPath string, progSec
 
 // graftDatapath replaces obj in tail call map
 func graftDatapath(ctx context.Context, mapPath, objPath, progSec string) error {
+	select {
+	case <-ctx.Done():
+		return ctx.Err()
+	default:
+	}
+
 	var err error
 
 	// FIXME: Replace cilium-map-migrate with Golang map migration
