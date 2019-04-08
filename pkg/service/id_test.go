@@ -75,7 +75,7 @@ func (ds *ServiceTestSuite) TestServices(c *C) {
 
 	gotL3n4AddrID, err := GetID(FirstFreeServiceID)
 	c.Assert(err, Equals, nil)
-	wantL3n4AddrID.ID = ffsIDu16
+	wantL3n4AddrID.ID = loadbalancer.ID(ffsIDu16)
 	wantL3n4AddrID.L3n4Addr = l3n4Addr1
 	c.Assert(gotL3n4AddrID, checker.DeepEquals, wantL3n4AddrID)
 
@@ -87,7 +87,7 @@ func (ds *ServiceTestSuite) TestServices(c *C) {
 
 	gotL3n4AddrID, err = GetID(FirstFreeServiceID + 1)
 	c.Assert(err, Equals, nil)
-	wantL3n4AddrID.ID = loadbalancer.ServiceID(FirstFreeServiceID + 1)
+	wantL3n4AddrID.ID = loadbalancer.ID(FirstFreeServiceID + 1)
 	wantL3n4AddrID.L3n4Addr = l3n4Addr2
 	c.Assert(gotL3n4AddrID, checker.DeepEquals, wantL3n4AddrID)
 
